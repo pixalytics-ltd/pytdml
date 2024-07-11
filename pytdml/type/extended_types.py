@@ -45,7 +45,7 @@ class PixelLabel(Label):
     Extended label type for pixel level training data
     """
     type: Literal["AI_PixelLabel"]
-    image_URL: List[str] = Field(min_items=1)
+    image_url: List[str] = Field(min_items=1)
     image_format: List[str] = Field(min_items=1)
 
     @field_validator("image_format")
@@ -64,8 +64,8 @@ class ObjectLabel(Label):
     object: Feature
     label_class: str = Field(alias="class")
 
-    date_time: Optional[str]
-    bbox_type: Optional[str]
+    date_time: Optional[str] = ""
+    bbox_type: Optional[str] = ""
 
     @field_validator("date_time")
     def validate_date_time(cls, v):
@@ -85,7 +85,7 @@ class EOTask(Task):
     Extended task type for EO training data
     """
     type: Literal["AI_EOTask"]
-    taskType: str
+    task_type: str
 
 
 class EOTrainingData(TrainingData):
@@ -93,9 +93,8 @@ class EOTrainingData(TrainingData):
     Extended training data type for EO training data
     """
     type: Literal["AI_EOTrainingData"]
-    dataURL: List[str] = Field(min_items=1)  # That one should be uri-format
-
-    extent: Optional[Union[Extent, BoundingBox]]
+    data_url: List[str] = Field(min_items=1)
+    extent: Optional[Union[Extent, BoundingBox]] = None
     date_time: Optional[List[str]] = []
 
     @field_validator("date_time")
@@ -111,10 +110,10 @@ class EOTrainingDataset(TrainingDataset):
     Extended training dataset type for EO training dataset
     """
     type: Literal["AI_EOTrainingDataset"]
-    # For Convinience, we allow the user to specify the bands by name
 
+    # For Convenience, we allow the user to specify the bands by name
     bands: Optional[List[MD_Band]] = []
-    extent: Optional[Extent]
+    extent: Optional[Extent] = None
     imageSize: Optional[str] = ""
     tasks: List[EOTask] = Field(min_items=1)
     data: List[EOTrainingData] = Field(min_items=1)

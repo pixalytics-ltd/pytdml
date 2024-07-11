@@ -33,7 +33,8 @@
 from typing import List, Union, Optional, Dict, Literal
 from pydantic import BaseModel, Field, field_validator, root_validator, validator
 from pytdml.type._utils import _validate_date, to_camel, _valid_methods, _validate_training_type
-from pytdml.type.extended_types import EOTask, EOTrainingData, PixelLabel, ObjectLabel, SceneLabel
+# Causes circular error issue
+#from pytdml.type.extended_types import EOTask, EOTrainingData, PixelLabel, ObjectLabel, SceneLabel
 
 
 class BaseCamelModel(BaseModel):
@@ -111,8 +112,8 @@ class MD_Scope(BaseCamelModel):
     """
 
     level: str
-    extent: Optional[List[float]] = Field(min_items=4)
-    level_description: Optional[MD_ScopeDescription]
+    #extent: Optional[List[float]] = Field(min_items=4)
+    #level_description: Optional[MD_ScopeDescription]
 
 
 class CI_Date(BaseCamelModel):
@@ -443,7 +444,7 @@ class Label(BaseCamelModel):
     type: Literal["AI_AbstractLabel"]
 
     is_negative: Optional[bool] = False  # Optional without default value
-    confidence: Optional[float] = Field(ge=0.0, le=1.0)  # Optional without default value
+    #confidence: Optional[float] = Field(ge=0.0, le=1.0)  # Optional without default value
 
 
 class TrainingData(BaseCamelModel):
@@ -453,14 +454,15 @@ class TrainingData(BaseCamelModel):
 
     type: Literal["AI_AbstractTrainingData"]
     id: str
-    labels: List[Union[Label, PixelLabel, ObjectLabel, SceneLabel]]
+    labels: List[Label]
+    #labels: List[Union[Label, PixelLabel, ObjectLabel, SceneLabel]]
 
-    dataset_id: Optional[str]
-    data_sources: Optional[List[CI_Citation]] = None
-    number_of_labels: Optional[int]
-    labeling: Optional[List[Labeling]] = None
-    training_type: Optional[str] = None
-    quality: Optional[List[DataQuality]] = None
+    dataset_id: Optional[str] = ""
+    data_sources: Optional[List[CI_Citation]] = []
+    #number_of_labels: Optional[int]
+    labeling: Optional[List[Labeling]] =[]
+    training_type: Optional[str] = ""
+    quality: Optional[List[DataQuality]] = []
 
     @field_validator("training_type")
     def validate_training_type(cls, v):
@@ -517,9 +519,9 @@ class AI_TDChangeset(BaseCamelModel):
     dataset_id: Optional[str]
     version: Optional[str]
     created_time: Optional[str]
-    add: Optional[List[Union[TrainingData, EOTrainingData]]]
-    modify: Optional[List[Union[TrainingData, EOTrainingData]]]
-    delete: Optional[List[Union[TrainingData, EOTrainingData]]]
+    #add: Optional[List[Union[TrainingData, EOTrainingData]]]
+    #modify: Optional[List[Union[TrainingData, EOTrainingData]]]
+    #delete: Optional[List[Union[TrainingData, EOTrainingData]]]
 
     @field_validator("created_time")
     def validate_created_time(cls, v):
@@ -535,12 +537,12 @@ class TrainingDataset(BaseCamelModel):
     name: str
     description: str
     license: str
-    tasks: List[Task, EOTask] = Field(min_items=1)
-    data: List[TrainingData, EOTrainingData] = Field(min_items=1)  # That one should be uri-format
+    #tasks: List[Task, EOTask] = Field(min_items=1)
+    #data: List[TrainingData, EOTrainingData] = Field(min_items=1)  # That one should be uri-format
     type: Literal["AI_AbstractTrainingDataset"]
 
-    amount_Of_TrainingData: Optional[int]
-    classes: Optional[List[NamedValue]]
+    amount_of_trainingdata: Optional[int]
+    classes: Optional[List[NamedValue]] = None
     classification_schema: Optional[str] = ""  # That one should be uri-format
     created_time: Optional[str]
     dataSources: Optional[List[CI_Citation]] = []  # That string one should be uri-format
@@ -551,7 +553,7 @@ class TrainingDataset(BaseCamelModel):
     scope: Optional[MD_Scope] = None
     statistics_info: Optional[List[NamedValue]] = None
     updated_time: Optional[str] = ""
-    version: Optional[str]
+    version: Optional[str] = ""
     labeling: Optional[List[Labeling]] = []
     metrics_in_LIT: Optional[List[MetricsInLiterature]] = None
     quality: Optional[List[DataQuality]] = None

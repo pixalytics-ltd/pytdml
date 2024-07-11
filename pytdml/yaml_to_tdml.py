@@ -39,7 +39,7 @@ from geojson import Polygon, Feature
 import s3fs
 
 from pytdml.io import write_to_json
-from pytdml.type import EOTask, EOTrainingDataset, EOTrainingData, SceneLabel, PixelLabel, ObjectLabel, Scope
+from pytdml.type import EOTask, EOTrainingDataset, EOTrainingData, SceneLabel, PixelLabel, ObjectLabel, MD_Scope
 
 
 def yaml_to_eo_tdml(yaml_path):
@@ -55,6 +55,7 @@ def yaml_to_eo_tdml(yaml_path):
     tasks = []
     for task in tasks_list:
         eo_task = EOTask(
+            type="AI_EOTask",
             id=task.__contains__('id') and task['id'] or "",
             dataset_id=task.__contains__('dataset_id') and task['dataset_id'] or "",
             task_type=task.__contains__('task_type') and task['task_type'] or "",
@@ -62,26 +63,34 @@ def yaml_to_eo_tdml(yaml_path):
         )
         tasks.append(eo_task)
 
+    Scope = MD_Scope(
+        dataset = yaml_dict.__contains__('dataset') and yaml_dict['dataset'] or "",
+        level = yaml_dict.__contains__('level') and yaml_dict['level'] or "",
+        extent = yaml_dict.__contains__('extent') and yaml_dict['extent'] or "",
+        levelDescription = yaml_dict.__contains__('levelDescription') and yaml_dict['levelDescription'] or ""
+    )
+
     if dataset_type == 'EOTrainingDataset':
         eo_training_dataset = EOTrainingDataset(
+            type="AI_EOTrainingDataset",
             id=yaml_dict['id'],
             name=yaml_dict['name'],
             description=yaml_dict['description'],
             license=yaml_dict['license'],
             doi=yaml_dict['doi'],
-            scope=Scope.from_dict(yaml_dict['scope']),
-            version=yaml_dict['version'],
-            amount_of_training_data=len(td_list),
-            created_time=yaml_dict['created_time'],
-            updated_time=yaml_dict['updated_time'],
+            scope=Scope,
+            version=str(yaml_dict['version']),
+            amount_of_trainingdata=len(td_list),
+            created_time=str(yaml_dict['created_time']),
+            updated_time=str(yaml_dict['updated_time']),
             providers=yaml_dict["providers"],
             keywords=yaml_dict["keywords"],
             classification_schema=yaml_dict['classification_schema'],
             number_of_classes=yaml_dict['number_of_classes'],
-            classes=yaml_dict['classes'],
+            #classes=yaml_dict['classes'],
             tasks=tasks,
-            extent=yaml_dict['extent'],
-            bands=yaml_dict['bands'],
+            #extent=yaml_dict['extent'],
+            #bands=yaml_dict['bands'],
             image_size=yaml_dict['image_size'],
             data=td_list,
         )
@@ -175,9 +184,10 @@ def load_data_semantic_segmentation(image_set, label_set):
     index = 0
     for image_url, label_url in zip(image_dir, label_dir):
         td = EOTrainingData(
+            type="AI_EOTrainingData",
             id=str(index),
-            labels=[PixelLabel(image_url=label_url, image_format=image_set['format'])],
-            data_url=str(image_url)
+            labels=[PixelLabel(type="AI_PixelLabel",image_url=[label_url], image_format=[image_set['format']])],
+            data_url=[str(image_url)]
         )
         index = index + 1
         td_list.append(td)
@@ -342,10 +352,11 @@ def traverse_s3(object_path, file_format):
         s3_object = []
         s3 = s3fs.S3FileSystem(anon=True)
         split = object_path.split("/")
+        file_ext = file_format.split("/")[1][0:3]
         bucket = split[2]
         for root, dirs, files in s3.walk(bucket):
                 for f in files:
-                    if (split[3] in root) and (split[4] in root) and (split[5] in root) and (file_format == os.path.splitext(f)[-1]):
+                    if (split[3] in root) and (split[4] in root) and (split[5] in root) and (file_ext in os.path.splitext(f)[-1]):
                         s3_object.append(os.path.join("s3://"+root, f))
         return s3_object
     except IOError:
