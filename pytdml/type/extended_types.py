@@ -110,7 +110,7 @@ class EOTrainingDataset(TrainingDataset):
     Extended training dataset type for EO training dataset
     """
     type: Literal["AI_EOTrainingDataset"]
-    # For Convinience, we allow the user to specify the bands by name
+    # For Convenience, we allow the user to specify the bands by name
     bands: Optional[List[Union[str, MD_Band]]]=[]
     extent: Optional[List[float]] = Field(min_items=4)
     imageSize: Optional[str]=""
